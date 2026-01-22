@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="product_custom_description" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <div class="w-100 mb-2" t-if="product.type == 'service'">
+                <label for="product_description" class="form-label fw-bold">Product Description</label>
+                <textarea
+                    class="form-control"
+                    name="product_description"
+                    id="product_description"
+                    rows="3"
+                    required="1"
+                    placeholder="Enter product description..."
+                />
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

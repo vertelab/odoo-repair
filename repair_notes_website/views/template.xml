@@ -4,11 +4,11 @@
     <template id="product_custom_description" inherit_id="website_sale.product">
         <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
             <div class="w-100 mb-2" t-if="product.create_repair">
-                <label for="repair_description" class="form-label fw-bold">Repair Notes</label>
+                <label for="repair_note" class="form-label fw-bold">Repair Notes</label>
                 <textarea
                     class="form-control"
-                    name="repair_description"
-                    id="repair_description"
+                    name="repair_note"
+                    id="repair_note"
                     rows="3"
                     required="1"
                     placeholder="Enter repair notes..."

@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='order_line']/list//field[@name='qty_delivered']" position="after">
-                    <field name="repair_description" optional="show"/>
+                    <field name="repair_note" optional="show"/>
                 </xpath>
             </field>
         </record>

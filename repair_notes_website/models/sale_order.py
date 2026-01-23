@@ -15,17 +15,17 @@ class SaleOrder(models.Model):
     def _cart_update(self, product_id=None, line_id=None, add_qty=0, set_qty=0, **kwargs):
         values = super()._cart_update(product_id, line_id, add_qty, set_qty, **kwargs)
         
-        if values.get('line_id') and kwargs.get('repair_description'):
+        if values.get('line_id') and kwargs.get('repair_note'):
             line = self.env['sale.order.line'].sudo().browse(values['line_id'])
 
             if line.product_id.create_repair:
-                line.repair_description = kwargs['repair_description']
+                line.repair_note = kwargs['repair_note']
         return values
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    repair_description = fields.Char(string="Repair Description")
+    repair_note = fields.Char(string="Repair Note")
 
     def _create_repair_order(self):
         new_repair_vals = []
@@ -46,7 +46,7 @@ class SaleOrderLine(models.Model):
                 'sale_order_id': order.id,
                 'sale_order_line_id': line.id,
                 'picking_type_id': order.warehouse_id.repair_type_id.id,
-                'internal_notes': line.repair_description,
+                'internal_notes': line.repair_note,
             }
             if line.product_id.tracking == 'serial':
                 vals = {

@@ -13,9 +13,10 @@
     'contributor': '',
     'maintainer': 'Vertel AB',
     'repository': 'https://github.com/vertelab/odoo-sale',
-    'depends': ['sale', 'website_sale'],
+    'depends': ['sale', 'website_sale', 'repair'],
     'data': [
-        'views/template.xml'
+        'views/sale_order_views.xml',
+        'views/template.xml',
     ],
     'assets': {
         'web.assets_frontend': [

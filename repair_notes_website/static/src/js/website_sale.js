@@ -9,8 +9,8 @@ WebsiteSale.include({
      */
     _updateRootProduct($form, productId, productTemplateId) {
         this._super(...arguments);
-        if ($form.find('textarea[name="product_description"]').length) {
-            this.rootProduct['product_description'] = $form.find('textarea[name="product_description"]').val();
+        if ($form.find('textarea[name="repair_description"]').length) {
+            this.rootProduct['repair_description'] = $form.find('textarea[name="repair_description"]').val();
         }
     },
 
@@ -19,8 +19,8 @@ WebsiteSale.include({
      */
     _submitForm() {
         const params = this.rootProduct;
-        if (params.product_description !== undefined && params.product_description.trim().length === 0) {
-            alert(_t("Enter Product Description"));
+        if (params.repair_description !== undefined && params.repair_description.trim().length === 0) {
+            alert(_t("Enter Repair Description"));
             return Promise.resolve(); // Stop execution
         }
         return this._super(...arguments);

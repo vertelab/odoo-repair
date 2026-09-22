@@ -9,7 +9,7 @@
     """,
     #'sequence': '1',
     'author': 'Vertel AB',
-    'website': 'https://vertel.se/apps/odoo-sale/sale_order_task_estimate_time',
+    'website': 'https://vertel.se/apps/odoo-repair/repair_product_estimated_time',
     'images': ['static/description/banner.png'], # 560x280 px.
     'license': 'AGPL-3',
     'contributor': '',

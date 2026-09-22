@@ -7,7 +7,7 @@
         This module allows customers to add description from webshop to sale order.
     """,
     'author': 'Vertel AB',
-    'website': 'https://vertel.se/apps/odoo-sale/sale_order_webshop_description',
+    'website': 'https://vertel.se/apps/odoo-repair/repair_notes_website',
     'images': ['static/description/banner.png'],  # 560x280 px.
     'license': 'AGPL-3',
     'contributor': '',

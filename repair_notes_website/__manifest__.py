@@ -1,11 +1,20 @@
 {
     'name': 'Sale: Webshop Description',
     'version': '18.0.0.1.0',
-    'summary': 'Sale order webshop description',
+    'summary': 'Sale order webshop description.',
     'category': 'Sales',
-    'description': """
-        This module allows customers to add description from webshop to sale order.
-    """,
+    'description': '''
+Webshop Description
+===================
+
+    This module allows customers to add description from webshop to sale order.
+
+    Features:
+
+        - Web integration: Exposes HTTP endpoints for external systems.
+        - UI Integration: Extends 2 view(s) in the Odoo interface.
+        - Extends Odoo: Builds on sale.order, sale.order.line.
+    ''',
     'author': 'Vertel AB',
     'website': 'https://vertel.se/apps/odoo-repair/repair_notes_website',
     'images': ['static/description/banner.png'],  # 560x280 px.

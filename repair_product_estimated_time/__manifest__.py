@@ -4,24 +4,16 @@
     # Version ledger: 14.0 = Odoo version. 1 = Major. Non regressionable code. 2 = Minor. New features that are regressionable. 3 = Bug fixes
     'summary': 'This module adds time estimate to product and sale order line then to task.',
     'category': 'Sales',
-    'description': '''
-Order Task Time Estimate
-========================
-
+    'description': """
     This module adds time estimate to product and sale order line then to task.
-
-    Features:
-
-        - UI Integration: Extends 1 view(s) in the Odoo interface.
-        - Extends Odoo: Builds on product.product, product.template.
-    ''',
+    """,
     #'sequence': '1',
-    'author': 'Vertel AB',
-    'website': 'https://vertel.se/apps/odoo-repair/repair_product_estimated_time',
+    'author': 'Vertel Sverige AB',
+    'website': 'https://vertel.se/apps/odoo-sale/sale_order_task_estimate_time',
     'images': ['static/description/banner.png'], # 560x280 px.
     'license': 'AGPL-3',
     'contributor': '',
-    'maintainer': 'Vertel AB',
+    'maintainer': 'Vertel Sverige AB',
     'repository': 'https://github.com/vertelab/odoo-sale',
     'depends': ['sale', 'project', 'product'],
     'data': [

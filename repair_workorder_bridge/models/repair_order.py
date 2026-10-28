@@ -157,7 +157,7 @@ class RepairOrder(models.Model):
             repair.with_context(**{SKIP_SYNC: True}).write({'production_id': False})
             # The carrier exists only for this repair; leaving it behind would
             # litter the manufacturing order list with orphans.
-            if not production.repair_order_ids and production.state == 'draft':
+            if not production.bridge_repair_ids and production.state == 'draft':
                 production.unlink()
 
     def action_view_production(self):
@@ -170,6 +170,20 @@ class RepairOrder(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    def action_create_production(self):
+        """Re-create the carrier after the link was broken.
+
+        Breaking the link is deliberate and creates nothing afterwards -- the
+        button would otherwise be pointless. This action is the explicit way
+        back: the user asks for a carrier again.
+        """
+        for repair in self:
+            if repair.production_id:
+                raise UserError(_("This repair already has a work order carrier."))
+            if not repair.product_id:
+                raise UserError(_("Set a product before creating a work order carrier."))
+            repair._create_work_order_carrier()
 
     # ------------------------------------------------------------------
     # Mirroring (design.md Beslut 6)
@@ -221,3 +235,41 @@ class RepairOrder(models.Model):
                 values['planned_finished'] = workorder.date_finished
             if values:
                 repair.with_context(**{SKIP_SYNC: True}).write(values)
+
+    # ------------------------------------------------------------------
+    # Status (design.md Beslut 6, interpretation C)
+    # ------------------------------------------------------------------
+
+    #: Manufacturing order state -> repair state. The repair follows the work.
+    PRODUCTION_TO_REPAIR_STATE = {
+        'draft': 'draft',
+        'confirmed': 'confirmed',
+        'progress': 'under_repair',
+        'to_close': 'under_repair',
+        'done': 'done',
+        'cancel': 'cancel',
+    }
+
+    def _sync_state_from_production(self):
+        """Let the repair follow the manufacturing order's state.
+
+        Interpretation C: the repair follows the work, not the other way
+        around. Closing the repair does **not** close the work order -- a
+        repair can be finished administratively while the bench work lingers,
+        and an open work order left behind on the week planner is exactly the
+        clutter the bridge exists to avoid. The opposite direction is safe:
+        when the work is done, the repair is done.
+
+        ``button_mark_done()`` is not used in the other direction because a
+        manufacturing order that has work orders refuses it with "You need to
+        complete Quality Checks using the Shop Floor". A plannable repair
+        always has routing, so that path is closed to us.
+        """
+        if self.env.context.get(SKIP_SYNC):
+            return
+        for repair in self:
+            if not repair.production_id:
+                continue
+            target = self.PRODUCTION_TO_REPAIR_STATE.get(repair.production_id.state)
+            if target and repair.state != target:
+                repair.with_context(**{SKIP_SYNC: True}).write({'state': target})

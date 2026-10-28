@@ -48,6 +48,10 @@
                             invisible="not production_id"
                             confirm="The repair will no longer be planned. No new carrier is created."
                             groups="mrp.group_mrp_user"/>
+                    <button name="action_create_production" type="object"
+                            string="Create Work Order Carrier"
+                            invisible="production_id or not product_id"
+                            groups="mrp.group_mrp_user"/>
                 </xpath>
             </field>
         </record>

@@ -47,8 +47,8 @@ class TestRepairWorkOrderBridge(TransactionCase):
     def test_smart_button_both_directions(self):
         """The link is visible from both sides."""
         repair = self._create_repair()
-        self.assertEqual(repair.production_id.repair_order_ids, repair)
-        self.assertEqual(repair.production_id.repair_count, 1)
+        self.assertEqual(repair.production_id.bridge_repair_ids, repair)
+        self.assertEqual(repair.production_id.bridge_repair_count, 1)
 
     def test_unlink_is_breakable_and_creates_no_new_carrier(self):
         """Breaking the link is deliberate: no carrier is recreated."""
@@ -135,6 +135,74 @@ class TestRepairWorkOrderBridge(TransactionCase):
             repair._get_carrier_workorder(),
             "A product without a bill of materials yields no work order",
         )
+
+
+    # -- status mirroring (design.md Beslut 6, interpretation C) --------
+
+    def test_production_done_marks_repair_done(self):
+        """When the work is done, the repair follows."""
+        repair = self._create_repair(self._product_with_routing())
+        production = repair.production_id
+        production.write({'state': 'progress'})
+        self.assertEqual(repair.state, 'under_repair')
+        production.write({'state': 'done'})
+        self.assertEqual(repair.state, 'done')
+
+    def test_production_cancel_marks_repair_cancelled(self):
+        """A cancelled carrier cancels the repair."""
+        repair = self._create_repair(self._product_with_routing())
+        repair.production_id.write({'state': 'cancel'})
+        self.assertEqual(repair.state, 'cancel')
+
+    def test_repair_done_does_not_close_production(self):
+        """Interpretation C: closing the repair must not close the bench work.
+
+        An open work order left behind on the week planner is exactly the
+        clutter the bridge exists to avoid, so the direction is one-way.
+        """
+        repair = self._create_repair(self._product_with_routing())
+        production = repair.production_id
+        production.write({'state': 'progress'})
+        repair.write({'state': 'done'})
+        self.assertEqual(
+            production.state, 'progress',
+            "Closing the repair must not close the manufacturing order",
+        )
+
+    def test_single_workorder_done_does_not_close_repair(self):
+        """One finished operation is not a finished repair.
+
+        A carrier with several operations keeps the repair ``under_repair``
+        until the manufacturing order itself moves on -- the repair follows the
+        state of the order, not of one operation.
+        """
+        repair = self._create_repair(self._product_with_routing())
+        workorder = repair._get_carrier_workorder()
+        repair.production_id.write({'state': 'progress'})
+        workorder.write({'state': 'done'})
+        self.assertEqual(repair.state, 'under_repair')
+
+    def test_all_workorders_done_moves_production_to_close(self):
+        """When every operation is finished the order is to_close, not done."""
+        repair = self._create_repair(self._product_with_routing())
+        production = repair.production_id
+        production.write({'state': 'progress'})
+        for workorder in production.workorder_ids:
+            workorder.write({'state': 'done'})
+        self.assertEqual(production.state, 'to_close')
+        self.assertEqual(
+            repair.state, 'under_repair',
+            "to_close means the work is done but the order is not closed",
+        )
+
+    def test_state_mirror_does_not_recurse(self):
+        """The state hooks must not bounce between the two records."""
+        repair = self._create_repair(self._product_with_routing())
+        production = repair.production_id
+        production.write({'state': 'progress'})
+        production.write({'state': 'done'})
+        self.assertEqual(repair.state, 'done')
+        self.assertEqual(production.state, 'done')
 
     # -- helpers ------------------------------------------------------
 

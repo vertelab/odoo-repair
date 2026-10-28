@@ -45,6 +45,7 @@ module adds no material logic of its own.
     'data': [
         'views/repair_order_views.xml',
         'views/mrp_production_views.xml',
+        'views/mrp_workorder_views.xml',
     ],
     'installable': True,
     'auto_install': False,

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            Smart button from the carrier back to the repair (requirement 1).
+        -->
+        <record id="view_mrp_production_form_bridge" model="ir.ui.view">
+            <field name="name">mrp.production.form.bridge</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_repair_orders" type="object"
+                            class="oe_stat_button" icon="fa-wrench"
+                            groups="mrp.group_mrp_user"
+                            invisible="not repair_count">
+                        <field name="repair_count" widget="statinfo"
+                               string="Repairs"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

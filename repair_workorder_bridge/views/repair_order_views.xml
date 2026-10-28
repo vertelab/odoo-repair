@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            Smart buttons in both directions (design.md Beslut 5, requirement 1).
+        -->
+        <record id="view_repair_order_form_bridge" model="ir.ui.view">
+            <field name="name">repair.order.form.bridge</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_production" type="object"
+                            class="oe_stat_button" icon="fa-industry"
+                            invisible="not production_id"
+                            groups="mrp.group_mrp_user">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Work Order</span>
+                            <span class="o_stat_text">Carrier</span>
+                        </div>
+                    </button>
+                </xpath>
+                <xpath expr="//field[@name='schedule_date']" position="after">
+                    <field name="technician_id"
+                           groups="mrp.group_mrp_user"/>
+                    <field name="planned_start"
+                           groups="mrp.group_mrp_user"/>
+                    <field name="planned_finished"
+                           groups="mrp.group_mrp_user"/>
+                </xpath>
+                <xpath expr="//sheet" position="inside">
+                    <field name="production_id" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--
+            The link is breakable, so the button to break it has to exist.
+        -->
+        <record id="view_repair_order_form_bridge_unlink" model="ir.ui.view">
+            <field name="name">repair.order.form.bridge.unlink</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_unlink_production" type="object"
+                            string="Unlink Work Order Carrier"
+                            invisible="not production_id"
+                            confirm="The repair will no longer be planned. No new carrier is created."
+                            groups="mrp.group_mrp_user"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,140 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* repair_workorder_bridge
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20261029\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 08:12+0000\n"
+"PO-Revision-Date: 2026-10-29 08:12+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge
+msgid ""
+"<span class=\"o_stat_text\">Work Order</span>\n"
+"                            <span class=\"o_stat_text\">Carrier</span>"
+msgstr "<span class=\"o_stat_text\">Arbetsorder</span>\n"
+"                            <span class=\"o_stat_text\">Bärare</span>"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__technician_id
+msgid "Assigned Technician"
+msgstr "Tilldelad tekniker"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_mrp_production__bridge_repair_count
+msgid "Carried Repair Count"
+msgstr "Antal burna reparationer"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_mrp_production__bridge_repair_ids
+msgid "Carried Repairs"
+msgstr "Burna reparationer"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink
+msgid "Create Work Order Carrier"
+msgstr "Skapa arbetsorderbärare"
+
+#. module: repair_workorder_bridge
+#: model:ir.model,name:repair_workorder_bridge.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Tillverkningsorder"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__production_id
+msgid ""
+"Tillverkningsorder som bär arbetsordern för denna reparation. Skapas "
+"automatiskt; kopplingen kan brytas manuellt."
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__technician_id
+msgid "Mirrored to the work order's assigned employee."
+msgstr "Speglas mot arbetsorderns tilldelade medarbetare."
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__planned_finished
+msgid "Mirrored to the work order's planned finish."
+msgstr "Speglas mot arbetsorderns planerade slut."
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__planned_start
+msgid "Mirrored to the work order's planned start."
+msgstr "Speglas mot arbetsorderns planerade start."
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__planned_finished
+msgid "Planned Finish"
+msgstr "Planerat slut"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__planned_start
+msgid "Planned Start"
+msgstr "Planerad start"
+
+#. module: repair_workorder_bridge
+#: model:ir.model,name:repair_workorder_bridge.model_repair_order
+msgid "Repair Order"
+msgstr "Reparationsorder"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_mrp_workorder__repair_ids
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_mrp_production_form_bridge
+msgid "Repairs"
+msgstr "Reparationer"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_mrp_workorder__repair_ids
+msgid "Repairs carried by this work order's manufacturing order."
+msgstr "Reparationer som bärs av denna arbetsorders tillverkningsorder."
+
+#. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid "Set a product before creating a work order carrier."
+msgstr "Ange en produkt innan du skapar en arbetsorderbärare."
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink
+msgid "The repair will no longer be planned. No new carrier is created."
+msgstr "Reparationen kommer inte längre att planeras. Ingen ny bärare skapas."
+
+#. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid "This repair already has a work order carrier."
+msgstr "Denna reparation har redan en arbetsorderbärare."
+
+#. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid "This repair has no work order carrier."
+msgstr "Denna reparation saknar arbetsorderbärare."
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink
+msgid "Unlink Work Order Carrier"
+msgstr "Bryt arbetsorderbärare"
+
+#. module: repair_workorder_bridge
+#: model:ir.model,name:repair_workorder_bridge.model_mrp_workorder
+msgid "Work Order"
+msgstr "Arbetsorder"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__production_id
+msgid "Work Order Carrier"
+msgstr "Arbetsorderbärare"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__work_order_count
+msgid "Work Orders"
+msgstr "Arbetsordrar"

@@ -136,7 +136,11 @@ class RepairOrder(models.Model):
                 if not repair.production_id and repair.product_id:
                     repair._create_work_order_carrier()
         if {'technician_id', 'planned_start', 'planned_finished'} & set(vals):
-            self._sync_to_workorder()
+            # Tell the mirror whether the end date was set explicitly in this
+            # write. Without that, a repair that already has a planned finish
+            # would keep its old end when only the start moves -- and Odoo
+            # refuses a work order whose end is before its start.
+            self.with_context(planned_finished_given='planned_finished' in vals)._sync_to_workorder()
         return res
 
     # ------------------------------------------------------------------
@@ -201,9 +205,17 @@ class RepairOrder(models.Model):
         return self.production_id.workorder_ids.sorted('sequence')[:1]
 
     def _sync_to_workorder(self):
-        """Push the planning fields onto the carrier's work order."""
+        """Push the planning fields onto the carrier's work order.
+
+        When only the planned start moves, the work order's end date is moved
+        with it, keeping the duration. Odoo refuses a work order whose end is
+        before its start (``mrp.workorder.write``), so writing the start alone
+        would raise a message about the work order's end date -- a message that
+        makes no sense to someone who only changed the repair's planned start.
+        """
         if self.env.context.get(SKIP_SYNC):
             return
+        finish_given = self.env.context.get('planned_finished_given')
         for repair in self:
             workorder = repair._get_carrier_workorder()
             if not workorder:
@@ -213,10 +225,39 @@ class RepairOrder(models.Model):
                 values['main_employee_id'] = repair.technician_id.id
             if repair.planned_start:
                 values['date_start'] = repair.planned_start
-            if repair.planned_finished:
+                # Odoo requires both dates when the start moves: writing the
+                # start alone makes it derive the duration from the *old* end
+                # and raise "the planned end date cannot be prior to the
+                # planned start". ``bypass_duration_calculation`` does not help,
+                # the check runs before it. So the end is always sent, keeping
+                # the duration unless the user gave an explicit end.
+                if finish_given and repair.planned_finished:
+                    values['date_finished'] = repair.planned_finished
+                elif workorder.date_start and workorder.date_finished:
+                    values['date_finished'] = (
+                        workorder.date_finished
+                        - workorder.date_start
+                        + repair.planned_start
+                    )
+            elif repair.planned_finished:
                 values['date_finished'] = repair.planned_finished
             if values:
-                workorder.with_context(**{SKIP_SYNC: True}).write(values)
+                # ``bypass_duration_calculation`` keeps Odoo from recomputing
+                # the end date from the operation's duration. Without it, a
+                # start written without an end makes Odoo derive the duration
+                # from the *old* end and raise "the planned end date cannot be
+                # prior to the planned start".
+                workorder.with_context(
+                    **{SKIP_SYNC: True, 'bypass_duration_calculation': True}
+                ).write(values)
+                # The work order owns its end date: it derives it from the
+                # operation's duration, so an end date we write may come back
+                # different. Mirror the actual value so the repair does not
+                # keep a planned finish the work order never accepted.
+                repair.with_context(**{SKIP_SYNC: True}).write({
+                    'planned_start': workorder.date_start,
+                    'planned_finished': workorder.date_finished,
+                })
 
     def _sync_from_workorder(self):
         """Pull the planning fields back from the carrier's work order."""

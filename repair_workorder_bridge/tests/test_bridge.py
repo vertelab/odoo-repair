@@ -88,6 +88,48 @@ class TestRepairWorkOrderBridge(TransactionCase):
         repair.write({'technician_id': self.employee_a.id})
         self.assertEqual(workorder.main_employee_id, self.employee_a)
 
+    def test_planned_start_alone_keeps_duration(self):
+        """Moving only the start must not leave the end behind.
+
+        Odoo refuses a work order whose end is before its start, so writing the
+        start alone would raise a message about the work order's end date --
+        meaningless to someone who only changed the repair's planned start.
+        """
+        repair = self._create_repair(self._product_with_routing())
+        workorder = repair._get_carrier_workorder()
+        first = datetime(2026, 11, 2, 7, 0)
+        repair.write({'planned_start': first})
+        duration = workorder.date_finished - workorder.date_start
+        second = datetime(2026, 11, 9, 7, 0)
+        repair.write({'planned_start': second})
+        self.assertEqual(workorder.date_start, second)
+        self.assertEqual(workorder.date_finished, second + duration)
+        # Moving the start again, now that a planned finish exists, must still
+        # not leave the end behind.
+        third = datetime(2026, 11, 16, 7, 0)
+        repair.write({'planned_start': third})
+        self.assertEqual(workorder.date_start, third)
+        self.assertEqual(workorder.date_finished, third + duration)
+
+    def test_workorder_owns_its_end_date(self):
+        """The work order derives its end from the operation's duration.
+
+        An end date written from the repair may come back different, so the
+        repair mirrors the actual value instead of keeping one the work order
+        never accepted.
+        """
+        repair = self._create_repair(self._product_with_routing())
+        workorder = repair._get_carrier_workorder()
+        repair.write({
+            'planned_start': datetime(2026, 11, 2, 7, 0),
+            'planned_finished': datetime(2026, 11, 2, 12, 0),
+        })
+        self.assertEqual(workorder.date_start, datetime(2026, 11, 2, 7, 0))
+        self.assertEqual(
+            repair.planned_finished, workorder.date_finished,
+            "The repair must show the end the work order actually has",
+        )
+
     def test_planned_dates_mirror_to_workorder(self):
         """Planned start reaches the work order and lands in a week."""
         repair = self._create_repair(self._product_with_routing())
@@ -203,6 +245,59 @@ class TestRepairWorkOrderBridge(TransactionCase):
         production.write({'state': 'done'})
         self.assertEqual(repair.state, 'done')
         self.assertEqual(production.state, 'done')
+
+
+    # -- remaining §9 coverage -----------------------------------------
+
+    def test_carrier_not_created_twice(self):
+        """create + write must not produce two carriers."""
+        repair = self.Repair.create({'product_qty': 1.0})
+        repair.write({'product_id': self.product_service.id})
+        first = repair.production_id
+        repair.write({'product_id': self.product_service.id})
+        self.assertEqual(
+            repair.production_id, first,
+            "A second write must reuse the carrier, not create another",
+        )
+        self.assertEqual(
+            self.Production.search_count([('origin', '=', repair.name)]), 1,
+        )
+
+    def test_create_production_after_unlink(self):
+        """The explicit way back after breaking the link."""
+        repair = self._create_repair()
+        repair.action_unlink_production()
+        self.assertFalse(repair.production_id)
+        repair.action_create_production()
+        self.assertTrue(repair.production_id)
+        self.assertEqual(repair.production_id.origin, repair.name)
+
+    def test_create_production_refuses_when_carrier_exists(self):
+        """Asking for a second carrier is an error, not a duplicate."""
+        repair = self._create_repair()
+        with self.assertRaises(Exception):
+            repair.action_create_production()
+
+    def test_repair_without_partner_gets_carrier(self):
+        """A repair without a customer is still plannable."""
+        repair = self.Repair.create({
+            'product_id': self.product_service.id,
+            'product_qty': 1.0,
+        })
+        self.assertTrue(repair.production_id)
+        self.assertFalse(repair.partner_id)
+
+    def test_all_production_states_map(self):
+        """Every manufacturing state maps to a repair state."""
+        expected = {
+            'draft': 'draft',
+            'confirmed': 'confirmed',
+            'progress': 'under_repair',
+            'to_close': 'under_repair',
+            'done': 'done',
+            'cancel': 'cancel',
+        }
+        self.assertEqual(self.Repair.PRODUCTION_TO_REPAIR_STATE, expected)
 
     # -- helpers ------------------------------------------------------
 

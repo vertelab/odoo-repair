@@ -52,3 +52,36 @@ Create a repair order for the product. A smart button labelled *Work Order
 Carrier* should appear, pointing at a manufacturing order with one work order.
 Schedule it — set *Planned Start* — and the work order should appear in the week
 planner under that week.
+
+## Planning past the promised date
+
+A repair carries two dates that mean different things:
+
+| Field | Means |
+|-------|-------|
+| *Scheduled Date* (`schedule_date`) | when the customer was told the work would be done |
+| *Planned Start* / *Planned Finish* | when the workshop intends to do it |
+
+Nothing forces the two to agree, so a repair could be planned weeks past its
+promise without anyone noticing. It cannot any more: saving a plan that
+finishes after the scheduled date is refused, and the message says how late the
+plan is.
+
+The way forward is the **Plan Past Scheduled Date** button in the repair's
+header. It opens a dialog that states the delay in days and hours; confirming
+saves the plan, cancelling leaves the repair untouched. The button only appears
+when the repair actually is late.
+
+Planning late is allowed, and sometimes right — parts arrive late, the customer
+agrees to wait. The point is that it has to be a decision. A yellow banner can
+be clicked away without being read.
+
+The same message appears in the form as soon as a planned finish past the
+scheduled date is entered, so nobody fills in a form only to be refused at the
+end.
+
+### If you do not want the question
+
+The check is a guard in `repair.order.write()`. It does not fire when the work
+order mirrors back the dates it actually accepted — that is bookkeeping, not a
+planning decision — so the mirror keeps working regardless.

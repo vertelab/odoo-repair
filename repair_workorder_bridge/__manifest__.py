@@ -1,6 +1,6 @@
 {
     'name': 'Repair: Work Order Bridge',
-    'version': '18.0.0.2.0',
+    'version': '18.0.0.3.0',
     'summary': 'Give every repair a work order carrier so it can be planned',
     'category': 'Manufacturing/Repair',
     'description': """
@@ -43,7 +43,9 @@ module adds no material logic of its own.
         'hr',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'views/repair_order_views.xml',
+        'wizard/repair_late_confirm_views.xml',
         'views/mrp_production_views.xml',
         'views/mrp_workorder_views.xml',
     ],

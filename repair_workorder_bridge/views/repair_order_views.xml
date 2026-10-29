@@ -27,6 +27,8 @@
                            groups="mrp.group_mrp_user"/>
                     <field name="planned_finished"
                            groups="mrp.group_mrp_user"/>
+                    <field name="is_late" invisible="1"/>
+                    <field name="late_days" invisible="1"/>
                 </xpath>
                 <xpath expr="//sheet" position="inside">
                     <field name="production_id" invisible="1"/>
@@ -37,6 +39,29 @@
         <!--
             The link is breakable, so the button to break it has to exist.
         -->
+        <!--
+            The way forward when the plan runs past the promised date.
+
+            Saving is refused by the guard in write(); this button is how the
+            planner says "yes, I know" and gets the plan through. It only shows
+            when the repair actually is late, so it is never a decoration.
+        -->
+        <record id="view_repair_order_form_bridge_late" model="ir.ui.view">
+            <field name="name">repair.order.form.bridge.late</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_plan_anyway" type="object"
+                            string="Plan Past Scheduled Date"
+                            class="btn-warning"
+                            invisible="not is_late"
+                            groups="mrp.group_mrp_user"
+                            confirm="The plan runs past the date the customer was promised. Continue?"/>
+                </xpath>
+            </field>
+        </record>
+
         <record id="view_repair_order_form_bridge_unlink" model="ir.ui.view">
             <field name="name">repair.order.form.bridge.unlink</field>
             <field name="model">repair.order</field>

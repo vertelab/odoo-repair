@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--
+            The question itself. Deliberately blunt: the planner should have to
+            read what they are about to do, not click past a yellow banner.
+        -->
+        <record id="view_repair_late_confirm_form" model="ir.ui.view">
+            <field name="name">repair.late.confirm.form</field>
+            <field name="model">repair.late.confirm</field>
+            <field name="arch" type="xml">
+                <form string="Planned Later Than Promised">
+                    <field name="repair_id" invisible="1"/>
+                    <div class="alert alert-warning" role="alert">
+                        <p class="fw-bold mb-2">
+                            This repair will be planned after the date the
+                            customer was promised.
+                        </p>
+                        <p class="mb-0">
+                            <field name="message"/>
+                        </p>
+                    </div>
+                    <group>
+                        <group string="Promised">
+                            <field name="schedule_date"/>
+                        </group>
+                        <group string="Planned">
+                            <field name="planned_start"/>
+                            <field name="planned_finished"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="technician_id"/>
+                    </group>
+                    <footer>
+                        <button name="action_confirm" type="object"
+                                string="Plan anyway" class="btn-primary"/>
+                        <button name="action_cancel" type="object"
+                                string="Cancel" class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

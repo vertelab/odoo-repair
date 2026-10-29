@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20261029\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 08:12+0000\n"
-"PO-Revision-Date: 2026-10-29 08:12+0000\n"
+"POT-Creation-Date: 2026-10-29 15:50+0000\n"
+"PO-Revision-Date: 2026-10-29 15:50+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,17 +16,36 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid "%(days)s days and %(hours)s hours"
+msgstr "%(days)s dagar och %(hours)s timmar"
+
+#. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid "%(hours)s hours"
+msgstr "%(hours)s timmar"
+
+#. module: repair_workorder_bridge
 #: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge
 msgid ""
 "<span class=\"o_stat_text\">Work Order</span>\n"
 "                            <span class=\"o_stat_text\">Carrier</span>"
-msgstr "<span class=\"o_stat_text\">Arbetsorder</span>\n"
+msgstr ""
+"<span class=\"o_stat_text\">Arbetsorder</span>\n"
 "                            <span class=\"o_stat_text\">Bärare</span>"
 
 #. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__technician_id
 #: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__technician_id
 msgid "Assigned Technician"
 msgstr "Tilldelad tekniker"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid "Cancel"
+msgstr "Avbryt"
 
 #. module: repair_workorder_bridge
 #: model:ir.model.fields,field_description:repair_workorder_bridge.field_mrp_production__bridge_repair_count
@@ -39,9 +58,65 @@ msgid "Carried Repairs"
 msgstr "Burna reparationer"
 
 #. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__message
+msgid "Consequence"
+msgstr "Konsekvens"
+
+#. module: repair_workorder_bridge
 #: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink
 msgid "Create Work Order Carrier"
 msgstr "Skapa arbetsorderbärare"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__late_days
+msgid "Days Late"
+msgstr "Dagar sen"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_late_confirm__late_days
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__late_days
+msgid "How many days the plan runs past the scheduled date."
+msgstr "Hur många dagar planen går förbi det schemalagda datumet."
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__id
+msgid "ID"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__is_late
+msgid "Is Late"
+msgstr "Är sen"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__late_days
+msgid "Late Days"
+msgstr "Dagar sen"
 
 #. module: repair_workorder_bridge
 #: model:ir.model,name:repair_workorder_bridge.model_mrp_production
@@ -51,8 +126,8 @@ msgstr "Tillverkningsorder"
 #. module: repair_workorder_bridge
 #: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__production_id
 msgid ""
-"Tillverkningsorder som bär arbetsordern för denna reparation. Skapas "
-"automatiskt; kopplingen kan brytas manuellt."
+"Manufacturing order that carries the work order for this repair. Created "
+"automatically; can be unlinked manually."
 msgstr ""
 
 #. module: repair_workorder_bridge
@@ -71,14 +146,49 @@ msgid "Mirrored to the work order's planned start."
 msgstr "Speglas mot arbetsorderns planerade start."
 
 #. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_late
+msgid "Plan Past Scheduled Date"
+msgstr "Planera förbi schemalagt datum"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid "Plan anyway"
+msgstr "Planera ändå"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid "Planned"
+msgstr "Planerat"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__planned_finished
 #: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__planned_finished
 msgid "Planned Finish"
 msgstr "Planerat slut"
 
 #. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+#: model:ir.model,name:repair_workorder_bridge.model_repair_late_confirm
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid "Planned Later Than Promised"
+msgstr "Planerad senare än utlovat"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__planned_start
 #: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_order__planned_start
 msgid "Planned Start"
 msgstr "Planerad start"
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid "Promised"
+msgstr "Utlovat"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__repair_id
+msgid "Repair"
+msgstr "Reparation"
 
 #. module: repair_workorder_bridge
 #: model:ir.model,name:repair_workorder_bridge.model_repair_order
@@ -97,10 +207,39 @@ msgid "Repairs carried by this work order's manufacturing order."
 msgstr "Reparationer som bärs av denna arbetsorders tillverkningsorder."
 
 #. module: repair_workorder_bridge
+#: model:ir.model.fields,field_description:repair_workorder_bridge.field_repair_late_confirm__schedule_date
+msgid "Scheduled Date"
+msgstr "Schemalagt datum"
+
+#. module: repair_workorder_bridge
 #. odoo-python
 #: code:addons/repair_workorder_bridge/models/repair_order.py:0
 msgid "Set a product before creating a work order carrier."
 msgstr "Ange en produkt innan du skapar en arbetsorderbärare."
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_late
+msgid "The plan runs past the date the customer was promised. Continue?"
+msgstr "Planen går förbi det datum kunden blev lovad. Fortsätt?"
+
+#. module: repair_workorder_bridge
+#: model:ir.model.fields,help:repair_workorder_bridge.field_repair_order__is_late
+msgid ""
+"The planned finish is later than the scheduled date, so the repair will be "
+"delivered after the date the customer was promised."
+msgstr ""
+"Det planerade slutet ligger senare än det schemalagda datumet, så "
+"reparationen levereras efter det datum kunden blev lovad."
+
+#. module: repair_workorder_bridge
+#. odoo-python
+#: code:addons/repair_workorder_bridge/models/repair_order.py:0
+msgid ""
+"The planned finish is later than the scheduled date. The repair is planned "
+"%(late)s after the date the customer was promised."
+msgstr ""
+"Det planerade slutet ligger senare än det schemalagda datumet. Reparationen "
+"planeras %(late)s efter det datum kunden blev lovad."
 
 #. module: repair_workorder_bridge
 #: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink
@@ -118,6 +257,13 @@ msgstr "Denna reparation har redan en arbetsorderbärare."
 #: code:addons/repair_workorder_bridge/models/repair_order.py:0
 msgid "This repair has no work order carrier."
 msgstr "Denna reparation saknar arbetsorderbärare."
+
+#. module: repair_workorder_bridge
+#: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_late_confirm_form
+msgid ""
+"This repair will be planned after the date the\n"
+"                            customer was promised."
+msgstr ""
 
 #. module: repair_workorder_bridge
 #: model_terms:ir.ui.view,arch_db:repair_workorder_bridge.view_repair_order_form_bridge_unlink

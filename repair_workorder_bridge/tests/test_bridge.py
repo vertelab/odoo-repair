@@ -4,6 +4,8 @@
 
 from datetime import datetime, timedelta
 
+from odoo import fields
+from odoo.exceptions import UserError
 from odoo.tests import TransactionCase, tagged
 
 
@@ -28,6 +30,20 @@ class TestRepairWorkOrderBridge(TransactionCase):
         return self.Repair.create({
             'product_id': (product or self.product_service).id,
             'product_qty': 1.0,
+        })
+
+    def _create_plannable_repair(self, product=None):
+        """A repair whose deadline leaves room for the planning tests.
+
+        The planning tests work with fixed November dates. The default
+        ``schedule_date`` is "now", which would put those dates past the
+        promised date and trip the late guard -- correctly, but not what those
+        tests are about.
+        """
+        return self.Repair.create({
+            'product_id': (product or self.product_service).id,
+            'product_qty': 1.0,
+            'schedule_date': datetime(2026, 12, 31, 23, 59),
         })
 
     def test_carrier_created_on_create(self):
@@ -95,7 +111,7 @@ class TestRepairWorkOrderBridge(TransactionCase):
         start alone would raise a message about the work order's end date --
         meaningless to someone who only changed the repair's planned start.
         """
-        repair = self._create_repair(self._product_with_routing())
+        repair = self._create_plannable_repair(self._product_with_routing())
         workorder = repair._get_carrier_workorder()
         first = datetime(2026, 11, 2, 7, 0)
         repair.write({'planned_start': first})
@@ -118,7 +134,7 @@ class TestRepairWorkOrderBridge(TransactionCase):
         repair mirrors the actual value instead of keeping one the work order
         never accepted.
         """
-        repair = self._create_repair(self._product_with_routing())
+        repair = self._create_plannable_repair(self._product_with_routing())
         workorder = repair._get_carrier_workorder()
         repair.write({
             'planned_start': datetime(2026, 11, 2, 7, 0),
@@ -323,3 +339,130 @@ class TestRepairWorkOrderBridge(TransactionCase):
             })],
         })
         return product
+
+    # ------------------------------------------------------------------
+    # Late warning (planned past the scheduled date)
+    # ------------------------------------------------------------------
+
+    def _late_repair(self):
+        """A repair whose plan runs past the date the customer was promised."""
+        product = self._product_with_routing()
+        repair = self.env['repair.order'].create({
+            'product_id': product.id,
+            'schedule_date': fields.Datetime.to_string(
+                fields.Datetime.now() + timedelta(days=1)
+            ),
+        })
+        return repair
+
+    def test_is_late_false_without_plan(self):
+        """No plan means nothing to be late for."""
+        repair = self._late_repair()
+        self.assertFalse(repair.planned_finished)
+        self.assertFalse(repair.is_late)
+        self.assertEqual(repair.late_days, 0.0)
+
+    def test_is_late_within_schedule(self):
+        """A plan that finishes before the promised date is not late."""
+        repair = self._late_repair()
+        repair.write({
+            'planned_start': repair.schedule_date - timedelta(days=2),
+            'planned_finished': repair.schedule_date - timedelta(days=1),
+        })
+        self.assertFalse(repair.is_late)
+        self.assertEqual(repair.late_days, 0.0)
+
+    def test_is_late_past_schedule(self):
+        """A plan that finishes after the promised date is late."""
+        repair = self._late_repair()
+        repair.with_context(late_confirmed=True).write({
+            'planned_start': repair.schedule_date + timedelta(days=1),
+            'planned_finished': repair.schedule_date + timedelta(days=3),
+        })
+        self.assertTrue(repair.is_late)
+        # planned_finished is three days past the scheduled date.
+        self.assertAlmostEqual(repair.late_days, 3.0, places=1)
+
+    def test_write_refuses_late_plan(self):
+        """The guard stops a late plan that nobody has confirmed."""
+        repair = self._late_repair()
+        with self.assertRaises(UserError):
+            repair.write({
+                'planned_start': repair.schedule_date + timedelta(days=1),
+                'planned_finished': repair.schedule_date + timedelta(days=3),
+            })
+        # The repair must be untouched: the guard raises before super().write.
+        repair.invalidate_recordset()
+        self.assertFalse(repair.planned_finished)
+
+    def test_write_allows_late_plan_when_confirmed(self):
+        """``late_confirmed`` is how the wizard says the planner agreed."""
+        repair = self._late_repair()
+        repair.with_context(late_confirmed=True).write({
+            'planned_start': repair.schedule_date + timedelta(days=1),
+            'planned_finished': repair.schedule_date + timedelta(days=3),
+        })
+        self.assertTrue(repair.is_late)
+
+    def test_write_allows_plan_within_schedule(self):
+        """The guard must not get in the way of ordinary planning."""
+        repair = self._late_repair()
+        repair.write({
+            'planned_start': repair.schedule_date - timedelta(days=2),
+            'planned_finished': repair.schedule_date - timedelta(days=1),
+        })
+        self.assertTrue(repair.planned_finished)
+
+    def test_wizard_confirm_applies_plan(self):
+        """Confirming the wizard writes the plan the guard refused."""
+        repair = self._late_repair()
+        start = repair.schedule_date + timedelta(days=1)
+        finish = repair.schedule_date + timedelta(days=3)
+        wizard = self.env['repair.late.confirm'].create({
+            'repair_id': repair.id,
+            'planned_start': start,
+            'planned_finished': finish,
+        })
+        wizard.action_confirm()
+        repair.invalidate_recordset()
+        self.assertEqual(repair.planned_finished, finish)
+        self.assertTrue(repair.is_late)
+
+    def test_wizard_cancel_leaves_repair_untouched(self):
+        """Cancelling is a real no: nothing is written."""
+        repair = self._late_repair()
+        wizard = self.env['repair.late.confirm'].create({
+            'repair_id': repair.id,
+            'planned_start': repair.schedule_date + timedelta(days=1),
+            'planned_finished': repair.schedule_date + timedelta(days=3),
+        })
+        wizard.action_cancel()
+        repair.invalidate_recordset()
+        self.assertFalse(repair.planned_finished)
+
+    def test_wizard_message_describes_pending_plan(self):
+        """The wizard explains the delay from its own values.
+
+        The repair still holds the old plan, so asking it would describe a
+        delay that has not been applied.
+        """
+        repair = self._late_repair()
+        wizard = self.env['repair.late.confirm'].create({
+            'repair_id': repair.id,
+            'planned_start': repair.schedule_date + timedelta(days=1),
+            'planned_finished': repair.schedule_date + timedelta(days=3),
+        })
+        self.assertIn('later than the scheduled date', wizard.message)
+
+    def test_plan_anyway_opens_wizard(self):
+        """The header button is the way forward from the refused save."""
+        repair = self._late_repair()
+        repair.with_context(late_confirmed=True).write({
+            'planned_start': repair.schedule_date + timedelta(days=1),
+            'planned_finished': repair.schedule_date + timedelta(days=3),
+        })
+        action = repair.action_plan_anyway()
+        self.assertEqual(action['res_model'], 'repair.late.confirm')
+        self.assertEqual(
+            action['context']['default_repair_id'], repair.id,
+        )

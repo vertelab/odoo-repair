@@ -42,10 +42,81 @@ class RepairOrder(models.Model):
         help="Mirrored to the work order's planned finish.",
     )
 
+    is_late = fields.Boolean(
+        compute='_compute_is_late', store=False,
+        help="The planned finish is later than the scheduled date, so the "
+             "repair will be delivered after the date the customer was "
+             "promised.",
+    )
+    late_days = fields.Float(
+        compute='_compute_is_late', store=False,
+        help="How many days the plan runs past the scheduled date.",
+    )
+
     @api.depends('production_id')
     def _compute_work_order_count(self):
         for repair in self:
             repair.work_order_count = len(repair.production_id.workorder_ids)
+
+    @api.depends('planned_finished', 'schedule_date')
+    def _compute_is_late(self):
+        for repair in self:
+            late = (
+                repair.planned_finished
+                and repair.schedule_date
+                and repair.planned_finished > repair.schedule_date
+            )
+            repair.is_late = bool(late)
+            repair.late_days = (
+                (repair.planned_finished - repair.schedule_date).total_seconds()
+                / 86400.0
+                if late else 0.0
+            )
+
+    # ------------------------------------------------------------------
+    # Late warning
+    # ------------------------------------------------------------------
+
+    def _late_message(self):
+        """Explain the delay in the terms the planner thinks in.
+
+        ``planned_finished`` is when the work will be done; ``schedule_date`` is
+        when the customer was told it would be. Planning past the promise is
+        sometimes the only option -- parts arrive late, the customer agrees to
+        wait -- but it must be a decision, not an accident.
+        """
+        self.ensure_one()
+        if not self.is_late:
+            return False
+        delta = self.planned_finished - self.schedule_date
+        days = delta.days
+        hours = delta.seconds // 3600
+        if days:
+            late = _("%(days)s days and %(hours)s hours", days=days, hours=hours)
+        else:
+            late = _("%(hours)s hours", hours=hours)
+        return _(
+            "The planned finish is later than the scheduled date. "
+            "The repair is planned %(late)s after the date the customer "
+            "was promised.",
+            late=late,
+        )
+
+    @api.onchange('planned_finished', 'schedule_date')
+    def _onchange_planned_finished_late(self):
+        """Tell the planner before they save, not after.
+
+        The guard in ``write`` is the real barrier; this is the courtesy that
+        stops someone filling in a form only to be refused at the end.
+        """
+        message = self._late_message()
+        if message:
+            return {
+                'warning': {
+                    'title': _("Planned Later Than Promised"),
+                    'message': message,
+                },
+            }
 
     # ------------------------------------------------------------------
     # Automatic carrier (design.md Beslut 5)
@@ -130,6 +201,16 @@ class RepairOrder(models.Model):
         because the planning fields are plain stored fields with no compute:
         nothing would notice that they changed.
         """
+        # The guard asks the planner a question, so it must not fire on the
+        # mirror writing back what the work order actually accepted: that is
+        # bookkeeping, not a planning decision, and the planner has no way to
+        # answer it.
+        if (
+            not self.env.context.get('late_confirmed')
+            and not self.env.context.get(SKIP_SYNC)
+            and {'planned_start', 'planned_finished', 'schedule_date'} & set(vals)
+        ):
+            self._guard_late(vals)
         res = super().write(vals)
         if 'product_id' in vals:
             for repair in self:
@@ -142,6 +223,45 @@ class RepairOrder(models.Model):
             # refuses a work order whose end is before its start.
             self.with_context(planned_finished_given='planned_finished' in vals)._sync_to_workorder()
         return res
+
+    def _guard_late(self, vals):
+        """Refuse a plan that runs past the promised date.
+
+        ``write`` must return ``True``, so it cannot hand back an action to
+        open a wizard. The guard therefore raises, and the form view offers the
+        way forward: the *Plan Anyway* button opens the confirmation wizard,
+        which rewrites with ``late_confirmed`` set.
+
+        The values are applied to a throwaway copy to find out what the plan
+        *would* be -- the repair itself must not change until the planner has
+        answered.
+        """
+        self.ensure_one()
+        simulated = self.new({
+            'planned_start': vals.get('planned_start', self.planned_start),
+            'planned_finished': vals.get('planned_finished', self.planned_finished),
+            'schedule_date': vals.get('schedule_date', self.schedule_date),
+        })
+        message = simulated._late_message()
+        if message:
+            raise UserError(message)
+
+    def action_plan_anyway(self):
+        """Open the confirmation wizard for the current plan."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Planned Later Than Promised"),
+            'res_model': 'repair.late.confirm',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_repair_id': self.id,
+                'default_planned_start': self.planned_start,
+                'default_planned_finished': self.planned_finished,
+                'default_technician_id': self.technician_id.id,
+            },
+        }
 
     # ------------------------------------------------------------------
     # Unlinkable link (design.md Beslut 5, interpretation A)
